@@ -103,13 +103,20 @@ def pobierz_dane():
     output.to_csv(nazwa_pliku)
     komunikat_label.config(text=f"Plik został pobrany: {nazwa_pliku}")
 
-    # Generowanie wykresu liniowego
-    fig, ax = plt.subplots(figsize=(8, 6))
+    # Generowanie wykresów liniowych
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 12))
     for objaw in objawy:
-        ax.plot(data['date'], data[objaw], label=objaw)
-    ax.set(xlabel='Data', ylabel='Wartość wyszukiwań', title='Trend wyszukiwań objawów')
-    ax.legend()
-    plt.xticks(rotation=45)
+        ax1.plot(data['date'], data[objaw], label=objaw)
+    ax1.set(xlabel='Data', ylabel='Wartość wyszukiwań', title='Trend wyszukiwań objawów')
+    ax1.legend()
+    ax1.tick_params(axis='x', rotation=45)
+
+    sum_objawy = data[objawy].sum(axis=1)
+    ax2.plot(data['date'], sum_objawy, color='red', label='Suma objawów')
+    ax2.set(xlabel='Data', ylabel='Suma wyszukiwań', title='Suma wyszukiwań objawów')
+    ax2.legend()
+    ax2.tick_params(axis='x', rotation=45)
+
     plt.tight_layout()
     plt.show()
 
