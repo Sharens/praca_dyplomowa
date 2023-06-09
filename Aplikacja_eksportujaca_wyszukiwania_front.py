@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from pytrends.request import TrendReq
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Symptomy chorób
 choroba_serca = [
@@ -101,6 +102,16 @@ def pobierz_dane():
 
     output.to_csv(nazwa_pliku)
     komunikat_label.config(text=f"Plik został pobrany: {nazwa_pliku}")
+
+    # Generowanie wykresu liniowego
+    fig, ax = plt.subplots(figsize=(8, 6))
+    for objaw in objawy:
+        ax.plot(data['date'], data[objaw], label=objaw)
+    ax.set(xlabel='Data', ylabel='Wartość wyszukiwań', title='Trend wyszukiwań objawów')
+    ax.legend()
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
 
 # Interfejs użytkownika
 root = tk.Tk()
