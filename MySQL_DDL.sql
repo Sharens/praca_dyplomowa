@@ -37,16 +37,6 @@ CREATE TABLE STG_DIS_Alzheimer (
 );
 
 ----------------------------------------------------------------------
--- Tworzenie tabeli z outputem dla wyszukiwań alzheimera
-----------------------------------------------------------------------
-CREATE TABLE STG_DIS_Choroba_Wiencowa (
-	DATA  date,
-    NAZWA_OBJAWU varchar(100),
-    WARTOSC_WYSZUKIWANIA integer,
-    isPartial varchar(10)
-);
-
-----------------------------------------------------------------------
 -- Ładowanie danych do bazy danych
 ----------------------------------------------------------------------
 LOAD DATA INFILE "C:\Users\lenovoo\Downloads\output.csv"
