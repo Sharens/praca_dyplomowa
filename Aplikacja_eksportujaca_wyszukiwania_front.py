@@ -87,7 +87,7 @@ def pobierz_dane():
         return
 
     pytrends = TrendReq(hl='pl-PL', tz=360)
-    pytrends.build_payload(objawy, timeframe='today 5-y', geo='PL')
+    pytrends.build_payload(objawy, timeframe='all', geo='PL')
 
     data = pytrends.interest_over_time()
 
@@ -116,6 +116,14 @@ def pobierz_dane():
     ax2.set(xlabel='Data', ylabel='Suma wyszukiwań', title='Suma wyszukiwań objawów')
     ax2.legend()
     ax2.tick_params(axis='x', rotation=45)
+
+    if wybrana_choroba.lower() == 'cukrzyca':
+        years = [2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016]
+        deaths = [6014, 6359, 6599, 6761, 6512, 6766, 7129, 7441, 6786, 8249, 8295]
+        ax3 = plt.figure().add_subplot(111)
+        ax3.plot(years, deaths, marker='o')
+        ax3.set(xlabel='Rok', ylabel='Liczba zgonych', title='Zgony z powodu cukrzycy (statystyki GUS)')
+
 
     plt.tight_layout()
     plt.show()
