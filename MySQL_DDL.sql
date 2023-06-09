@@ -36,6 +36,48 @@ CREATE TABLE STG_DIS_Alzheimer (
     isPartial varchar(10)
 );
 
+
+----------------------------------------------------------------------
+-- Tworzenie tabeli z outputem dla wyszukiwań cukrzycy
+----------------------------------------------------------------------
+CREATE TABLE STG_DIS_Cukrzyca (
+	DATA  date,
+    NAZWA_OBJAWU varchar(100),
+    WARTOSC_WYSZUKIWANIA integer,
+    isPartial varchar(10)
+);
+
+----------------------------------------------------------------------
+-- Tworzenie tabeli z outputem dla wyszukiwań astmy
+----------------------------------------------------------------------
+CREATE TABLE STG_DIS_astma (
+	DATA  date,
+    NAZWA_OBJAWU varchar(100),
+    WARTOSC_WYSZUKIWANIA integer,
+    isPartial varchar(10)
+);
+
+----------------------------------------------------------------------
+-- Tworzenie tabeli z outputem dla nowotworu piersi
+----------------------------------------------------------------------
+CREATE TABLE STG_DIS_nowotwor_piersi (
+	DATA  date,
+    NAZWA_OBJAWU varchar(100),
+    WARTOSC_WYSZUKIWANIA integer,
+    isPartial varchar(10)
+);
+
+----------------------------------------------------------------------
+-- Tworzenie tabeli z outputem dla nowotworu płuc
+----------------------------------------------------------------------
+CREATE TABLE STG_DIS_nowotwor_pluc (
+	DATA  date,
+    NAZWA_OBJAWU varchar(100),
+    WARTOSC_WYSZUKIWANIA integer,
+    isPartial varchar(10)
+);
+
+
 ----------------------------------------------------------------------
 -- Ładowanie danych do bazy danych
 ----------------------------------------------------------------------
