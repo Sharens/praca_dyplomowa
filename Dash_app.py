@@ -4,62 +4,59 @@ import plotly.express as px
 from pytrends.request import TrendReq
 import dash
 from dash import html, dcc
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
+import base64
 
 # Symptomy chorób
-choroba_serca = [
-    'zawał serca',
-    'arytmia',
-    'zakrzepica',
-    'ból w klatce piersiowej',
-    'objawy choroby wieńcowej'
-]
-
-objawy_grypy = [
-    'gorączka',
-    'ból gardła',
-    'katar',
-    'kaszel',
-    'objawy grypy'
-]
-
-objawy_alzheimera = [
-    'utrata pamięci',
-    'dezorientacja',
-    'dezorganizacja',
-    'objawy alzheimera'
-]
-
-objawy_cukrzycy = [
-    'częste oddawanie moczu',
-    'pragnienie',
-    'nieuzasadniona utrata wagi',
-    'wzmożony apetyt',
-    'objawy cukrzycy'
-]
-
-objawy_astmy = [
-    'duszność',
-    'objawy astmy',
-    'kaszel',
-    'uczucie ściskania w klatce piersiowej',
-    'trudności w oddychaniu'
-]
-
-objawy_raka_piersi = [
-    'guzek w piersi',
-    'wydzielina lub wciągnięcie brodawki sutkowej',
-    'marskość lub pomarszczenie skóry',
-    'objawy raka piersi'
-]
-
-objawy_raka_pluc = [
-    'utrzymujący się kaszel',
-    'kaszel z krwią',
-    'chrypka',
-    'duszność',
-    'objawy raka płuc'
-]
+symptomy = {
+    'choroba_serca': [
+        'zawał serca',
+        'arytmia',
+        'zakrzepica',
+        'ból w klatce piersiowej',
+        'objawy choroby wieńcowej'
+    ],
+    'objawy_grypy': [
+        'gorączka',
+        'ból gardła',
+        'katar',
+        'kaszel',
+        'objawy grypy'
+    ],
+    'objawy_alzheimera': [
+        'utrata pamięci',
+        'dezorientacja',
+        'dezorganizacja',
+        'objawy alzheimera'
+    ],
+    'objawy_cukrzycy': [
+        'częste oddawanie moczu',
+        'pragnienie',
+        'nieuzasadniona utrata wagi',
+        'wzmożony apetyt',
+        'objawy cukrzycy'
+    ],
+    'objawy_astmy': [
+        'duszność',
+        'objawy astmy',
+        'kaszel',
+        'uczucie ściskania w klatce piersiowej',
+        'trudności w oddychaniu'
+    ],
+    'objawy_raka_piersi': [
+        'guzek w piersi',
+        'wydzielina lub wciągnięcie brodawki sutkowej',
+        'marskość lub pomarszczenie skóry',
+        'objawy raka piersi'
+    ],
+    'objawy_raka_pluc': [
+        'utrzymujący się kaszel',
+        'kaszel z krwią',
+        'chrypka',
+        'duszność',
+        'objawy raka płuc'
+    ]
+}
 
 # Funkcje obsługujące zdarzenia
 def pobierz_dane(choroba):
@@ -78,12 +75,12 @@ def pobierz_dane(choroba):
     output = output[['DATA', 'NAZWA_OBJAWU', 'WARTOSC_WYSZUKIWANIA']]
     output = output.sort_values(by=['DATA', 'NAZWA_OBJAWU'], ascending=[True, True])
 
-    nazwa_pliku = f'{choroba[0]}_trend.csv'
-    output.to_csv(nazwa_pliku, index=False)
+    return output
 
-    fig1 = px.line(output, x='DATA', y='WARTOSC_WYSZUKIWANIA', color='NAZWA_OBJAWU',
+def generuj_wykresy(data):
+    fig1 = px.line(data, x='DATA', y='WARTOSC_WYSZUKIWANIA', color='NAZWA_OBJAWU',
                    title='Trend wyszukiwań symptomów')
-    sum_objawy = output.groupby('DATA')['WARTOSC_WYSZUKIWANIA'].sum().reset_index()
+    sum_objawy = data.groupby('DATA')['WARTOSC_WYSZUKIWANIA'].sum().reset_index()
     fig2 = px.line(x=sum_objawy['DATA'], y=sum_objawy['WARTOSC_WYSZUKIWANIA'])
     fig2.update_layout(
         title='Suma wyszukiwań dla wszystkich objawów',
@@ -91,7 +88,7 @@ def pobierz_dane(choroba):
         yaxis_title='Suma wyszukiwań'
     )
 
-    return fig1, fig2, f'Plik został pobrany: {nazwa_pliku}'
+    return fig1, fig2
 
 # Interfejs użytkownika
 app = dash.Dash(__name__)
@@ -101,7 +98,7 @@ app.layout = html.Div([
     html.H2('Opis programu'),
     html.P(
         "Program pobiera trendy wyszukiwania objawów różnych chorób z Google Trends. Wybierz chorobę z listy rozwijanej i "
-        "kliknij przycisk 'Pobierz dane', aby pobrać dane dotyczące trendów wyszukiwania dla wybranej choroby."
+        "kliknij przycisk 'Pobierz dane .csv', aby pobrać dane dotyczące trendów wyszukiwania dla wybranej choroby."
     ),
     html.H3('Wybierz chorobę:'),
     dcc.Dropdown(
@@ -119,23 +116,42 @@ app.layout = html.Div([
         placeholder='Wybierz chorobę',
         clearable=False
     ),
-    html.Button('Pobierz dane', id='pobierz-button', n_clicks=0),
+    html.Button('Pobierz dane .csv', id='pobierz-csv-button', n_clicks=0),
+    html.Button('Wygeneruj wykresy', id='wygeneruj-wykresy-button', n_clicks=0),
     html.Div(id='komunikat-output'),
     dcc.Graph(id='wykres1'),
-    dcc.Graph(id='wykres2')
+    dcc.Graph(id='wykres2'),
+    dcc.Download(id="download-csv")
 ])
 
 @app.callback(
-    [Output('wykres1', 'figure'), Output('wykres2', 'figure'), Output('komunikat-output', 'children')],
-    [Input('pobierz-button', 'n_clicks')],
-    [dash.dependencies.State('choroba-dropdown', 'value')]
+    Output('komunikat-output', 'children'),
+    Output('download-csv', 'data'),
+    [Input('pobierz-csv-button', 'n_clicks')],
+    [State('choroba-dropdown', 'value')]
 )
-def update_charts(n_clicks, choroba):
-    if n_clicks > 0 and choroba is not None:
-        fig1, fig2, komunikat = pobierz_dane(eval(choroba))
-        return fig1, fig2, komunikat
+def pobierz_csv_callback(n_clicks, choroba):
+    if n_clicks > 0:
+        data = pobierz_dane(symptomy[choroba])
+        nazwa_pliku = f'{choroba}.csv'
+        data.to_csv(nazwa_pliku, index=False)
+        return f"Pobrano dane dla choroby: {choroba}", dict(content=data.to_csv(index=False), filename=nazwa_pliku)
+    else:
+        raise dash.exceptions.PreventUpdate
 
-    return {}, {}, ''
+@app.callback(
+    Output('wykres1', 'figure'),
+    Output('wykres2', 'figure'),
+    [Input('wygeneruj-wykresy-button', 'n_clicks')],
+    [State('choroba-dropdown', 'value')]
+)
+def generuj_wykresy_callback(n_clicks, choroba):
+    if n_clicks > 0:
+        data = pobierz_dane(symptomy[choroba])
+        fig1, fig2 = generuj_wykresy(data)
+        return fig1, fig2
+    else:
+        raise dash.exceptions.PreventUpdate
 
 if __name__ == '__main__':
     app.run_server(debug=True)
